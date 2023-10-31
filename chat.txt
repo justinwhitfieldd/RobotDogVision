@@ -1,0 +1,209 @@
+exampleofdogcontrol.js snippet:
+
+const { Go1, Go1Mode } = require("@droneblocks/go1-js");
+
+const FRAME_WIDTH = 640;
+const FRAME_HEIGHT = 480;
+const FACE_THRESHOLD = 50;
+
+let dog = new Go1();
+dog.init();
+dog.setMode(Go1Mode.walk);
+
+const processFaceLocation = async (x, y, width, height) => {
+  const faceCenterX = x + width / 2;
+  const faceCenterY = y + height / 2;
+
+  const frameCenterX = FRAME_WIDTH / 2;
+  const frameCenterY = FRAME_HEIGHT / 2;
+
+  const dx = faceCenterX - frameCenterX;
+  const dy = faceCenterY - frameCenterY;
+
+  if (Math.abs(dx) <= FACE_THRESHOLD && Math.abs(dy) <= FACE_THRESHOLD) {
+    dog.setLedColor(255, 0, 0); // Set LED to red
+    console.log("Face centered");
+  } else {
+    dog.setLedColor(255, 255, 255); // Set LED to white
+
+    if (Math.abs(dx) > FACE_THRESHOLD) {
+      await (dx > 0 ? dog.turnRight(0.1, 500) : dog.turnLeft(0.1, 500));
+    }
+
+    if (Math.abs(dy) > FACE_THRESHOLD) {
+      await (dy > 0 ? dog.lookDown(0.6, 500) : dog.lookUp(0.6, 500));
+    }
+  }
+};
+
+
+current app.py:
+
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+import time
+import io
+from PIL import Image
+import base64,cv2
+import numpy as np
+import pyshine as ps
+from flask_cors import CORS,cross_origin
+import imutils
+import dlib
+from engineio.payload import Payload
+from keras.layers import LSTM
+
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+Payload.max_decode_packets = 2048
+
+app = Flask(__name__)
+socketio = SocketIO(app,cors_allowed_origins='*' )
+
+
+
+@app.route('/', methods=['POST', 'GET'])
+
+def index():
+    return render_template('index.html')
+
+
+def readb64(base64_string):
+    idx = base64_string.find('base64,')
+    base64_string  = base64_string[idx+7:]
+
+    sbuf = io.BytesIO()
+
+    sbuf.write(base64.b64decode(base64_string, ' /'))
+    pimg = Image.open(sbuf)
+
+
+    return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+
+def moving_average(x):
+    return np.mean(x)
+
+
+@socketio.on('catch-frame')
+def catch_frame(data):
+
+    emit('response_back', data)  
+
+
+global fps,prev_recv_time,cnt,fps_array
+fps=30
+prev_recv_time = 0
+cnt=0
+fps_array=[0]
+
+@socketio.on('image')
+def image(data_image):
+    frame = readb64(data_image)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = detector(gray)
+
+    for face in faces:
+        x1 = face.left()
+        y1 = face.top()
+        x2 = face.right()
+        y2 = face.bottom()
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+
+    imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
+    stringData = base64.b64encode(imgencode).decode('utf-8')
+    b64_src = 'data:image/jpeg;base64,'
+    stringData = b64_src + stringData
+    emit('response_back', stringData)
+
+
+if __name__ == '__main__':
+    socketio.run(app,port=9990 ,debug=True)
+   
+
+current index.html:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+    	#video {
+    		transform: rotateY(180deg);
+    		-webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    		-moz-transform:rotateY(180deg); /* Firefox */
+    		
+    	}
+    </style>
+    
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+     <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.0/socket.io.js'></script>
+</head>
+
+<body>
+
+    <div id="container">
+    <video autoplay playsinline id="videoElement"></video>
+    <canvas id="canvas"  width="400" height="300"></canvas>
+    </div>
+
+    <div class = 'video'>
+        <img id="photo"  width="400"  height="300">
+        <h1>video</h1>
+    </div>
+
+    <script type="text/javascript" charset="utf-8">
+      
+        var socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
+        socket.on('connect', function(){
+            console.log("Connected...!", socket.connected)
+        });
+
+
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        const video = document.querySelector("#videoElement");
+
+        video.width = 400;
+        video.height = 300; 
+    
+
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function (err0r) {
+
+            });
+        }
+
+        const FPS = 30;
+        setInterval(() => {
+            width=video.width;
+            height=video.height;
+            context.drawImage(video, 0, 0, width , height );
+            var data = canvas.toDataURL('image/jpeg', 0.5);
+            context.clearRect(0, 0, width,height );
+            socket.emit('image', data);
+        }, 1000/FPS);
+
+        socket.on('response_back', function(image){
+                photo.setAttribute('src', image );
+                
+        });
+
+    </script>
+
+
+ </body>
+
+</html>
+
+
+
+I need the app.py and index.html to use the droneblocks go1-js to keep the face centered in the display, and will send commands to the go1 dog to keep the face centered. when the face is centered, send log "SHOOT".
+give me the new app.py and index.html.
