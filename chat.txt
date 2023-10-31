@@ -205,5 +205,5 @@ current index.html:
 
 
 
-I need the app.py and index.html to use the droneblocks go1-js to keep the face centered in the display, and will send commands to the go1 dog to keep the face centered. when the face is centered, send log "SHOOT".
-give me the new app.py and index.html.
+I need the app.py and index.html to use the droneblocks go1-js to keep the face centered in the display, and will send commands to the go1 dog to keep the face centered.dog.turnRight(0.1, 500) : dog.turnLeft(0.1, 500) dog.lookDown(0.6, 500) : dog.lookUp(0.6, 500) when the face is centered, send log "SHOOT".
+give me the new app.py and index.html. use import { Go1, Go1Mode } from "@droneblocks/go1-js"
