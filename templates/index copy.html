@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $(document).keydown(function(event) {
+                let command = '';
+                switch (event.which) {
+                    case 87: command = 'up'; break;
+                    case 65: command = 'left'; break;
+                    case 83: command = 'down'; break;
+                    case 68: command = 'right'; break;
+                }
+                
+                if (command) {
+                    $.post("/send_command", { command: command });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Press W, A, S, D to control</h1>
+</body>
+</html>
