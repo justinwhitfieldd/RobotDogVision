@@ -11,6 +11,7 @@ import numpy as np
 from PIL import Image
 from engineio.payload import Payload
 # Define body connections
+
 body_parts = {
     0: "nose",
     1: "leftEye",
@@ -62,6 +63,9 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 @app.route('/', methods=['POST', 'GET'])
 def index():
     return render_template('index.html')
+@app.route('/output', methods=['POST', 'GET'])
+def output():
+    return render_template('output.html')
 
 def readb64(base64_string):
     idx = base64_string.find('base64,')
@@ -71,7 +75,6 @@ def readb64(base64_string):
     pimg = Image.open(sbuf)
     return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
 
-@socketio.on('image')
 @socketio.on('image')
 def image(data_image):
     frame = readb64(data_image)
@@ -117,7 +120,7 @@ def image(data_image):
     stringData = base64.b64encode(imgencode).decode('utf-8')
     b64_src = 'data:image/jpeg;base64,'
     stringData = b64_src + stringData
-    emit('response_back', stringData)
+    socketio.emit('response_back', stringData, broadcast=True)
 
 if __name__ == '__main__':
     socketio.run(app, port=5000, debug=True)
