@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('wasdindex.html')
 
 @app.route('/send_command', methods=['POST'])
 def send_command():

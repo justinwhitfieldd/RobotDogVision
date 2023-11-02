@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS, cross_origin
 import tensorflow as tf
@@ -9,6 +9,7 @@ import cv2
 import base64
 import numpy as np
 from PIL import Image
+import requests
 from engineio.payload import Payload
 # Define body connections
 
@@ -33,23 +34,23 @@ body_parts = {
 }
 
 body_connections = [
-    (0, 1), #nose left eye
+    (0, 1), #nose left eye 0
   #  (1, 3), left eye, left ear
-    (0, 2), #nose right eye
-    (1,2),
+    (0, 2), #nose right eye 1
+    (1,2),  #2
    # (2, 4),  # right eye right ear
-    (5, 7), 
-    (7, 9),  # Left arm
-    (6, 8), 
-    (8, 10),  # Right arm
-    (5, 6),  # Shoulders
-    (5, 11), 
-    (6, 12),  # Body
-    (11, 13), 
-    (11, 12),
-    (13, 15),  # Left leg
-    (12, 14), 
-    (14, 16)  # Right leg
+    (5, 7), #3
+    (7, 9),  # Left arm 4
+    (6, 8),  #5
+    (8, 10),  # Right arm 6
+    (5, 6),  # Shoulders7
+    (5, 11),  # 8
+    (6, 12),  # Body 9
+    (11, 13), # 10
+    (11, 12), #11
+    (13, 15),  # Left leg12
+    (12, 14), #13
+    (14, 16)  # Right leg 14
 ]
 # Initialize MoveNet model
 model = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
@@ -114,6 +115,20 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
+            # central point coords = center_x, center_y
+            # center of image = 128, 128
+            if center_x < 128:
+                print("move right")
+                send_command("right")
+            if center_x > 128:
+                print("move left")
+                send_command("left")
+            if center_y < 128:
+                print("move up")
+                send_command("up")
+            if center_y > 128:
+                print("move down")
+                send_command("down")
                 
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
@@ -122,5 +137,16 @@ def image(data_image):
     stringData = b64_src + stringData
     socketio.emit('response_back', stringData, broadcast=True)
 
+@app.route('/send_command', methods=['POST'])
+def send_command(direction):
+    if direction == "up":
+        requests.post('http://localhost:3000/receive_command', json={'command': 'up'})
+    if direction == "down":
+        requests.post('http://localhost:3000/receive_command', json={'command': 'down'})
+    if direction == "left":
+        requests.post('http://localhost:3000/receive_command', json={'command': 'left'})
+    if direction == "right":
+        requests.post('http://localhost:3000/receive_command', json={'command': 'right'})     
+
 if __name__ == '__main__':
-    socketio.run(app, port=5000, debug=True)
+    socketio.run(app, port=5001, debug=True)
