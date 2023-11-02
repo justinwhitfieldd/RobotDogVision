@@ -11,25 +11,28 @@ dog.init();
 dog.setMode(Go1Mode.walk);
 
 app.post('/receive_command', (req, res) => {
-    const command = req.body.command;
-    console.log('Received command:', command);
+  const command = req.body.command;
+  const intensity = req.body.intensity;
+  const duration = req.body.duration;
 
-    switch (command) {
-        case 'up':
-            dog.lookUp(0.6, 500);
-            break;
-        case 'down':
-            dog.lookDown(0.6, 500);
-            break;
-        case 'left':
-            dog.turnLeft(0.1, 500);
-            break;
-        case 'right':
-            dog.turnRight(0.1, 500);
-            break;
-    }
+  console.log(`Received command: ${command}, intensity: ${intensity}, duration: ${duration}ms`);
 
-    res.send('Command received.');
+  switch (command) {
+      case 'up':
+          dog.lookUp(intensity, duration);
+          break;
+      case 'down':
+          dog.lookDown(intensity, duration);
+          break;
+      case 'left':
+          dog.turnLeft(intensity, duration);
+          break;
+      case 'right':
+          dog.turnRight(intensity, duration);
+          break;
+  }
+
+  res.send('Command received.');
 });
 
 app.listen(3000, () => {
