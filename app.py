@@ -12,7 +12,7 @@ from PIL import Image
 import requests
 from engineio.payload import Payload
 # Define body connections
-
+import math
 body_parts = {
     0: "nose",
     1: "leftEye",
@@ -75,6 +75,13 @@ def readb64(base64_string):
     sbuf.write(base64.b64decode(base64_string, ' /'))
     pimg = Image.open(sbuf)
     return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+def calculate_distance(point1, point2):
+    return int(np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2))
+
+def determine_intensity_duration(distance):
+    intensity = min(1, distance * 0.01)  # scale as needed, ensuring intensity <= 1
+    duration = min(5000, distance * 10)   # scale as needed, duration in milliseconds
+    return intensity, duration
 
 @socketio.on('image')
 def image(data_image):
@@ -123,6 +130,7 @@ def image(data_image):
             if start_point in points and end_point in points:
                 cv2.line(frame, points[start_point], points[end_point], (255, 0, 0), 2)
 
+
         # Draw the central point
         if all(key in points for key in [5, 6, 11, 12]):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
@@ -137,6 +145,17 @@ def image(data_image):
     b64_src = 'data:image/jpeg;base64,'
     stringData = b64_src + stringData
     socketio.emit('response_back', stringData, broadcast=True)
+
+# @app.route('/send_command', methods=['POST'])
+# def send_command(direction):
+#     if direction == "up":
+#         requests.post('http://localhost:3000/receive_command', json={'command': 'up'})
+#     if direction == "down":
+#         requests.post('http://localhost:3000/receive_command', json={'command': 'down'})
+#     if direction == "left":
+#         requests.post('http://localhost:3000/receive_command', json={'command': 'left'})
+#     if direction == "right":
+#         requests.post('http://localhost:3000/receive_command', json={'command': 'right'})     
 
 @app.route('/send_command', methods=['POST'])
 def send_command(center_x, center_y, frame_center_x, frame_center_y):
