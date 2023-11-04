@@ -84,12 +84,25 @@ def image(data_image):
     input_image = cv2.resize(frame, (256, 256))
     input_image = tf.expand_dims(input_image, axis=0)
     input_image = tf.cast(input_image, dtype=tf.int32)
-    
+    # Calculate the center of the image
+    height, width, channels = frame.shape
+    frame_center_x, frame_center_y = width // 2, height // 2
+
+    # Define the top left corner of the square
+    square_size = 10  # half the size of the square to draw
+    top_left_corner = (frame_center_x - square_size, frame_center_y - square_size)
+
+    # Define the bottom right corner of the square
+    bottom_right_corner = (frame_center_x + square_size, frame_center_y + square_size)
+
+    # Draw the square around the center of the image
+    cv2.rectangle(frame, top_left_corner, bottom_right_corner, (0, 0, 255), 2)
+
     outputs = movenet(input_image)
     keypoints = outputs['output_0'].numpy()[0]
     
     # Draw keypoints and connections
-    for person_id in range(6):
+    for person_id in range(1):
         keypoints_for_person = keypoints[person_id]
         
         points = {}
@@ -98,7 +111,7 @@ def image(data_image):
             y, x, score = keypoints_for_person[i:i + 3]
             point_id = i // 3
             
-            if score > 0.3:  # confidence score
+            if score > 0.5:  # confidence score
                 x = int(x * frame.shape[1])
                 y = int(y * frame.shape[0])
                 
@@ -115,20 +128,8 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
-            # central point coords = center_x, center_y
-            # center of image = 128, 128
-            if center_x < 128:
-                print("move right")
-                send_command("right")
-            if center_x > 128:
-                print("move left")
-                send_command("left")
-            if center_y < 128:
-                print("move up")
-                send_command("up")
-            if center_y > 128:
-                print("move down")
-                send_command("down")
+            
+            send_command(center_x, center_y, frame_center_x, frame_center_y)
                 
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
@@ -138,15 +139,13 @@ def image(data_image):
     socketio.emit('response_back', stringData, broadcast=True)
 
 @app.route('/send_command', methods=['POST'])
-def send_command(direction):
-    if direction == "up":
-        requests.post('http://localhost:3000/receive_command', json={'command': 'up'})
-    if direction == "down":
-        requests.post('http://localhost:3000/receive_command', json={'command': 'down'})
-    if direction == "left":
-        requests.post('http://localhost:3000/receive_command', json={'command': 'left'})
-    if direction == "right":
-        requests.post('http://localhost:3000/receive_command', json={'command': 'right'})     
-
+def send_command(center_x, center_y, frame_center_x, frame_center_y):
+    payload = {'x': center_x, 'y': center_y, 'imgx':frame_center_x, 'imgy':frame_center_y}
+    # Send the POST request to the Node.js server
+    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_x':frame_center_x})
+    if response.status_code == 200:
+        print("Coordinates successfully sent")
+    else:
+        print("Failed to send coordinates")
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=True)
