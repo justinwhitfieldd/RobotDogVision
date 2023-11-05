@@ -26,19 +26,28 @@ async function moveDogTowards(targetX, targetY, centerX, centerY) {
     num = num + 1;
     // Threshold to determine if the dog should move
     const moveThreshold = 15; // Adjust this value based on your needs
-
+    //(jesse) I added some logic to the commented out stuff. Might work for looking up.
     // Moving on the Y-axis (Up or Down)
     // if (Math.abs(yDifference) > moveThreshold) {
+    //  dog.setMode(Go1Mode.stand);
     //     if (yDifference < 0) {
+    //          dog.resetBody();
     //         // Target is up
-    //         console.log('Moving up');
-    //         dog.lookUp(0.6, 1000); // Assuming lookUp is the correct method for moving forward
+    //         console.log('Looking up');
+    //         dog.lookUp(0.1, 0.5); // Assuming lookUp is the correct method for moving forward
     //     } else {
     //         // Target is down
-    //         console.log('Moving down');
-    //         dog.lookDown(0.6, 1000); // Assuming lookDown is the correct method for moving backward
+    //          dog.resetBody();
+    //         console.log('Looking down');
+    //         dog.lookDown(0.1, 0.5); // Assuming lookDown is the correct method for moving backward
     //     }
+    // } else {
+    //     dog.resetBody();
     // }
+    // isMoving = false; // Reset the flag once the movement is complete
+
+
+    
     if (num % 10 == 0) {
         dog.resetBody();
     }
