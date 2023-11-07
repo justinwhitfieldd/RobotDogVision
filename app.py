@@ -13,6 +13,7 @@ import requests
 from engineio.payload import Payload
 # Define body connections
 import math
+# Clear TensorFlow Hub cache
 body_parts = {
     0: "nose",
     1: "leftEye",
@@ -161,7 +162,7 @@ def image(data_image):
 def send_command(center_x, center_y, frame_center_x, frame_center_y):
     payload = {'x': center_x, 'y': center_y, 'imgx':frame_center_x, 'imgy':frame_center_y}
     # Send the POST request to the Node.js server
-    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_x':frame_center_x})
+    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
     if response.status_code == 200:
         print("Coordinates successfully sent")
     else:
