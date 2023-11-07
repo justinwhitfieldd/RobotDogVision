@@ -18,33 +18,42 @@ async function moveDogTowards(targetX, targetY, centerX, centerY) {
     if (isMoving) {
         console.log('Move in progress, waiting...');
         return; // Exit the function if a move is already in progress
-      }
-      isMoving = true; // Set the flag to indicate movement has started
+    }
+    isMoving = true; // Set the flag to indicate movement has started
+  // Log the received values for verification
+  console.log(`targetX: ${targetX}, targetY: ${targetY}, centerX: ${centerX}, centerY: ${centerY}`);
+   
+    // Ensure centerX and centerY have default values if they are undefined
+    // centerX = centerX || 120; // You can adjust this default value as needed
+    // centerY = centerY || 120; // You can adjust this default value as needed
 
     const xDifference = targetX - centerX;
     const yDifference = targetY - centerY;
+    console.log('xDifference:', xDifference, 'yDifference:', yDifference);
+
     num = num + 1;
     // Threshold to determine if the dog should move
     const moveThreshold = 15; // Adjust this value based on your needs
+ // Adjust this value based on your needs
     //(jesse) I added some logic to the commented out stuff. Might work for looking up.
     // Moving on the Y-axis (Up or Down)
-    // if (Math.abs(yDifference) > moveThreshold) {
-    //  dog.setMode(Go1Mode.stand);
-    //     if (yDifference < 0) {
-    //          dog.resetBody();
-    //         // Target is up
-    //         console.log('Looking up');
-    //         dog.lookUp(0.1, 0.5); // Assuming lookUp is the correct method for moving forward
-    //     } else {
-    //         // Target is down
-    //          dog.resetBody();
-    //         console.log('Looking down');
-    //         dog.lookDown(0.1, 0.5); // Assuming lookDown is the correct method for moving backward
-    //     }
-    // } else {
-    //     dog.resetBody();
-    // }
-    // isMoving = false; // Reset the flag once the movement is complete
+    if (Math.abs(yDifference) > moveThreshold) {
+     dog.setMode(Go1Mode.stand);
+        if (yDifference < 0) {
+             dog.resetBody();
+            // Target is up
+            console.log('Looking up');
+            dog.lookUp(0.1, 0.5); // Assuming lookUp is the correct method for moving forward
+        } else {
+            // Target is down
+             dog.resetBody();
+            console.log('Looking down');
+            dog.lookDown(0.1, 0.5); // Assuming lookDown is the correct method for moving backward
+        }
+    } else {
+        dog.resetBody();
+    }
+    isMoving = false; // Reset the flag once the movement is complete
 
 
     

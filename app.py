@@ -159,12 +159,18 @@ def image(data_image):
 
 @app.route('/send_command', methods=['POST'])
 def send_command(center_x, center_y, frame_center_x, frame_center_y):
-    payload = {'x': center_x, 'y': center_y, 'imgx':frame_center_x, 'imgy':frame_center_y}
+    payload = {
+        'center_x': center_x,
+        'center_y': center_y,
+        'image_center_x': frame_center_x,
+        'image_center_y': frame_center_y  # Correct the key here
+    }
     # Send the POST request to the Node.js server
-    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_x':frame_center_x})
+    response = requests.post('http://localhost:3001/receive_command', json=payload)
     if response.status_code == 200:
         print("Coordinates successfully sent")
     else:
-        print("Failed to send coordinates")
+        print("Failed to send coordinates", response.status_code, response.text)
+
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=True)
