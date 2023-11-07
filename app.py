@@ -146,26 +146,9 @@ def image(data_image):
     b64_src = 'data:image/jpeg;base64,'
     stringData = b64_src + stringData
     socketio.emit('response_back', stringData, broadcast=True)
-
-# @app.route('/send_command', methods=['POST'])
-# def send_command(direction):
-#     if direction == "up":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'up'})
-#     if direction == "down":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'down'})
-#     if direction == "left":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'left'})
-#     if direction == "right":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'right'})     
-
+    
 @app.route('/send_command', methods=['POST'])
 def send_command(center_x, center_y, frame_center_x, frame_center_y):
-    payload = {
-        'center_x': center_x,
-        'center_y': center_y,
-        'image_center_x': frame_center_x,
-        'image_center_y': frame_center_y  # Correct the key here
-    }
     # Send the POST request to the Node.js server
     response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
     if response.status_code == 200:
