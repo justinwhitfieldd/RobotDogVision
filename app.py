@@ -140,6 +140,8 @@ def image(data_image):
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
             
             send_command(center_x, center_y, frame_center_x, frame_center_y)
+        else:
+            send_command(-1,-1,-1,-1)
                 
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
