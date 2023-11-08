@@ -138,10 +138,11 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
-            
-            send_command(center_x, center_y, frame_center_x, frame_center_y)
+
+            send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
         else:
-            send_command(-1,-1,-1,-1)
+            send_command(-1,-1,-1,-1,"green")
+            
                 
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
@@ -151,9 +152,9 @@ def image(data_image):
     socketio.emit('response_back', stringData, broadcast=True)
     
 @app.route('/send_command', methods=['POST'])
-def send_command(center_x, center_y, frame_center_x, frame_center_y):
+def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
     # Send the POST request to the Node.js server
-    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
+    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y,'color':color})
     if response.status_code == 200:
         print("Coordinates successfully sent")
     else:

@@ -1,7 +1,9 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { Go1, Go1Mode } = require("@droneblocks/go1-js");
-
+//const express = require('express');
+//const bodyParser = require('body-parser');
+//const { Go1, Go1Mode } = require("@droneblocks/go1-js");
+import { Go1, Go1Mode } from "@droneblocks/go1-js";
+import express from 'express';
+import bodyParser from 'body-parser';
 const app = express();
 
 app.use(bodyParser.json());
@@ -12,9 +14,16 @@ dog.init();
 dog.setMode(Go1Mode.walk);
 // const centerX = 120;
 // const centerY = 120;
+dog.setLedColor(200,200,200)
 let num = 0;
 let isStanding = false
-async function moveDogTowards(targetX, targetY, centerX, centerY) {
+async function moveDogTowards(targetX, targetY, centerX, centerY, color) {
+    if( color == "red") {
+        dog.setLedColor(200,0,0);
+    }
+    else if (color == "green") {
+        dog.setLedColor(0,0,200);
+    }
     if (targetX == -1) {
         dog.resetBody()
     }
@@ -141,14 +150,16 @@ app.post('/receive_command', (req, res) => {
     const y = req.body.center_y
     const center_x = req.body.image_center_x
     const center_y = req.body.image_center_y
-    console.log('Received coordinates:', x, y, center_x, center_y);
-    moveDogTowards(x, y, center_x, center_y);
+    const color = req.body.color
+    console.log('Received coordinates:', x, y, center_x, center_y, color);
 
-
+    
+    moveDogTowards(x, y, center_x, center_y, color);
     res.status(200).send('Coordinates received');
 });
 
 app.listen(3001, () => {
+
     console.log('Node.js server running on port 3001.');
 });
 

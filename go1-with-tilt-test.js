@@ -112,7 +112,15 @@ app.post('/receive_command', (req, res) => {
 
     res.status(200).send('Coordinates received');
 });
+app.post('/shoot', () => {
+    
+    console.log('Received coordinates:', x, y, center_x, center_y);
+    
+    setLedColor(255,0,0);
 
+    res.status(200).send('Coordinates received');
+});
 app.listen(3001, () => {
     console.log('Node.js server running on port 3001.');
 });
+setLedColor(255,0,0);
