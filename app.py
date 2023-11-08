@@ -64,6 +64,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    send_another_command(2, 3, 4, 5)
     return render_template('index.html')
 @app.route('/output', methods=['POST', 'GET'])
 def output():
@@ -155,6 +156,15 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y):
         print("Coordinates successfully sent")
     else:
         print("Failed to send coordinates", response.status_code, response.text)
+
+# @app.route('/send_another_command', methods=['POST'])
+# def send_another_command(center_x, center_y, frame_center_x, frame_center_y):
+#     # Send the POST request to the Node.js server
+#     response = requests.post('http://192.168.10.149:3002/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
+#     if response.status_code == 200:
+#         print("Coordinates successfully sent")
+#     else:
+#         print("Failed to send coordinates", response.status_code, response.text)
 
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=True)
