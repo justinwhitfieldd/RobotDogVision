@@ -64,7 +64,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    send_another_command(2, 3, 4, 5)
+    #send_another_command(2, 3, 4, 5)
     return render_template('index.html')
 @app.route('/output', methods=['POST', 'GET'])
 def output():

@@ -29,62 +29,54 @@ async function moveDogTowards(targetX, targetY, centerX, centerY) {
     num = num + 1;
     // Threshold to determine if the dog should move
     const moveThreshold = 15; // Adjust this value based on your needs
-    
-    if (Math.abs(xDifference) < moveThreshold){
+    const XmoveThreshold = 110; // Adjust this value based on your needs
+
+    if (Math.abs(xDifference) < XmoveThreshold){
         if(!isStanding){
             await(dog.resetBody())
             dog.setMode(Go1Mode.stand)
             isStanding = true;
         }
-        
-        if (Math.abs(yDifference) > 40) {
+        if (Math.abs(xDifference) > 20) {
+            if (xDifference < 0) {
+                //tilt left
+                dog.twistRight(0.5, 5)
+            }
+            if (xDifference < 20) {
+                //twist right
+                dog.twistLeft(0.5, 5)
+            }
+        }
+        if (Math.abs(yDifference) > 50) {
             //Wdog.setMode(Go1Mode.stand);
                if (yDifference < 0) {
                     dog.resetBody();
                    // Target is up
                    console.log('Looking up');
-                   dog.lookUp(0.8, 0.001); // Assuming lookUp is the correct method for moving forward
+                   dog.lookUp(0.7, 0.001); // Assuming lookUp is the correct method for moving forward
                } else {
                    // Target is down
                     dog.resetBody();
                    console.log('Looking down');
-                   dog.lookDown(0.8, 0.001); // Assuming lookDown is the correct method for moving backward
+                   dog.lookDown(0.7, 0.001); // Assuming lookDown is the correct method for moving backward
                }
            }
-           if (Math.abs(yDifference) < 40) {
+           if (Math.abs(yDifference) < 15) {
                //dog.setMode(Go1Mode.stand);
                    if (yDifference < 0) {
                        dog.resetBody();
                        // Target is up
                        console.log('Looking up');
-                       dog.lookUp(0.4, 0.001); // Assuming lookUp is the correct method for moving forward
+                       dog.lookUp(0.3, 0.001); // Assuming lookUp is the correct method for moving forward
                    } else {
                        // Target is down
                        dog.resetBody();
                        console.log('Looking down');
-                       dog.lookDown(0.4, 0.001); // Assuming lookDown is the correct method for moving backward
+                       dog.lookDown(0.3, 0.001); // Assuming lookDown is the correct method for moving backward
                    }
            }
     }
-    else if (Math.abs(xDifference) > 80) {
-        //dog.setMode(Go1Mode.walk);
-        if(isStanding){
-            await(dog.resetBody())
-            dog.setMode(Go1Mode.walk)
-            isStanding = false;
-        }
-        if (xDifference < 0) {
-            // Target is to the left
-            dog.resetBody();
-            console.log('Moving left');
-            dog.turnLeft(0.6, 0.01); // The speed and duration can be adjusted
-        } else {
-            // Target is to the right
-            dog.resetBody();
-            console.log('Moving right');
-            dog.turnRight(0.6, 0.01);
-        }
-    }
+  
     else if (Math.abs(xDifference) > moveThreshold) {
         //dog.setMode(Go1Mode.walk);
         if(isStanding){
@@ -96,39 +88,17 @@ async function moveDogTowards(targetX, targetY, centerX, centerY) {
             // Target is to the left
             dog.resetBody();
             console.log('Moving left');
-            dog.turnLeft(0.1, 0.5); // The speed and duration can be adjusted
+            dog.turnLeft(0.2, 0.5); // The speed and duration can be adjusted
         } else {
             // Target is to the right
             dog.resetBody();
             console.log('Moving right');
-            dog.turnRight(0.1, 0.5);
+            dog.turnRight(0.2, 0.5);
         }
     }
     isMoving = false; // Reset the flag once the movement is complete
 
 
-    
-    // if (num % 10 == 0) {
-    //     dog.resetBody();
-    // }
-    // if (Math.abs(xDifference) > moveThreshold) {
-    //     //dog.setMode(Go1Mode.walk);
-
-    //     if (xDifference < 0) {
-    //         // Target is to the left
-    //         dog.resetBody();
-    //         console.log('Moving left');
-    //         dog.turnLeft(0.1, 0.5); // The speed and duration can be adjusted
-    //     } else {
-    //         // Target is to the right
-    //         dog.resetBody();
-    //         console.log('Moving right');
-    //         dog.turnRight(0.1, 0.5);
-    //     }
-    // } else {
-    //     dog.resetBody();
-    // }
-    //isMoving = false; // Reset the flag once the movement is complete
 }
 app.post('/receive_command', (req, res) => {
     const x = req.body.center_x
@@ -146,4 +116,3 @@ app.post('/receive_command', (req, res) => {
 app.listen(3001, () => {
     console.log('Node.js server running on port 3001.');
 });
-
