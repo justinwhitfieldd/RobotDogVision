@@ -138,6 +138,13 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
+            
+            if abs(center_x - frame_center_x) < 20 and abs(center_y - frame_center_y) < 20:
+                rev_motor()
+            else:
+                stop_rev_motor()
+            if abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
+                shoot()
 
             send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
         else:
@@ -160,15 +167,41 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
     else:
         print("Failed to send coordinates", response.status_code, response.text)
 
-# @app.route('/rev_and_shoot', methods=['POST'])
-# def rev_and_shoot():
-#     # Send the POST request to the Node.js server
-#     response = requests.post('http://192.168.10.149:3002/rev_and_shoot')
-#     if response.status_code == 200:
-#         print("Command sent")
-#     else:
-#         print("Failed to send command", response.status_code, response.text)
+@app.route('/rev_and_shoot', methods=['POST'])
+def rev_and_shoot():
+    # Send the POST request to the Node.js server
+    response = requests.post('http://192.168.137.192:3002/rev_and_shoot')
+    if response.status_code == 200:
+        print("Command sent")
+    else:
+        print("Failed to send command", response.status_code, response.text)
 
+@app.route('/shoot', methods=['POST'])
+def shoot():
+    # Send the POST request to the Node.js server
+    response = requests.post('http://192.168.137.192:3002/shoot')
+    if response.status_code == 200:
+        print("Command sent")
+    else:
+        print("Failed to send command", response.status_code, response.text)
+
+@app.route('/rev_motor', methods=['POST'])
+def rev_motor():
+    # Send the POST request to the Node.js server
+    response = requests.post('http://192.168.137.192:3002/rev_motor')
+    if response.status_code == 200:
+        print("Command sent")
+    else:
+        print("Failed to send command", response.status_code, response.text)
+
+@app.route('/stop_rev_motor', methods=['POST'])
+def stop_rev_motor():
+    # Send the POST request to the Node.js server
+    response = requests.post('http://192.168.137.192:3002/stop_rev_motor')
+    if response.status_code == 200:
+        print("Command sent")
+    else:
+        print("Failed to send command", response.status_code, response.text)
 
 # Here are the commands I added to the PI flask server, their uses should be explained by their names
 # stop_rev_motor
