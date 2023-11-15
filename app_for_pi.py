@@ -1,3 +1,7 @@
+# to run on pi make sure you run with --port=3002 command because that is the listening port
+# flask run --cert=adhoc --port=3002
+# might need to enable the virtual env
+
 from flask import Flask, request, jsonify
 import RPi.GPIO as GPIO
 import time
@@ -13,7 +17,6 @@ GPIO.setup(fire, GPIO.OUT)
 # Initial state for relays
 GPIO.output(rev_motor, GPIO.LOW)
 GPIO.output(fire, GPIO.LOW)
-
 
 def toggle_relay(pin, state):
     """Toggle the relay to the desired state (True for ON, False for OFF)."""

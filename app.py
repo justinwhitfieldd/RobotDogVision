@@ -64,7 +64,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    #send_another_command(2, 3, 4, 5)
+    #rev_and_shoot()
     return render_template('index.html')
 @app.route('/output', methods=['POST', 'GET'])
 def output():
@@ -160,14 +160,22 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
     else:
         print("Failed to send coordinates", response.status_code, response.text)
 
-# @app.route('/send_another_command', methods=['POST'])
-# def send_another_command(center_x, center_y, frame_center_x, frame_center_y):
+# @app.route('/rev_and_shoot', methods=['POST'])
+# def rev_and_shoot():
 #     # Send the POST request to the Node.js server
-#     response = requests.post('http://192.168.10.149:3002/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
+#     response = requests.post('http://192.168.10.149:3002/rev_and_shoot')
 #     if response.status_code == 200:
-#         print("Coordinates successfully sent")
+#         print("Command sent")
 #     else:
-#         print("Failed to send coordinates", response.status_code, response.text)
+#         print("Failed to send command", response.status_code, response.text)
 
+
+# Here are the commands I added to the PI flask server, their uses should be explained by their names
+# stop_rev_motor
+# rev_motor
+# shoot
+# We should probabily add logic for sending rev and stop rev depending on distance from center and shoot if in center
+# modifications might need to be made where shoot follows the same logic as rev and we add a stop shooting command since
+# it would be cool if it just mowed people down
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=True)
