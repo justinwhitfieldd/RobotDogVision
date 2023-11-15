@@ -49,7 +49,6 @@ def shoot():
 @app.route('/rev_and_shoot', methods=['POST'])
 def rev_and_shoot():
     # Get JSON data from the request
-    data = request.get_json()
 
     toggle_relay(rev_motor, False)
     time.sleep(1)
