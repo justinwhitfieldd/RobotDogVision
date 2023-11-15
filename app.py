@@ -13,6 +13,7 @@ import requests
 from engineio.payload import Payload
 # Define body connections
 import math
+# Clear TensorFlow Hub cache
 body_parts = {
     0: "nose",
     1: "leftEye",
@@ -63,6 +64,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    #send_another_command(2, 3, 4, 5)
     return render_template('index.html')
 @app.route('/output', methods=['POST', 'GET'])
 def output():
@@ -136,8 +138,11 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
+
+            send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
+        else:
+            send_command(-1,-1,-1,-1,"green")
             
-            send_command(center_x, center_y, frame_center_x, frame_center_y)
                 
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
@@ -145,26 +150,24 @@ def image(data_image):
     b64_src = 'data:image/jpeg;base64,'
     stringData = b64_src + stringData
     socketio.emit('response_back', stringData, broadcast=True)
-
-# @app.route('/send_command', methods=['POST'])
-# def send_command(direction):
-#     if direction == "up":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'up'})
-#     if direction == "down":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'down'})
-#     if direction == "left":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'left'})
-#     if direction == "right":
-#         requests.post('http://localhost:3000/receive_command', json={'command': 'right'})     
-
+    
 @app.route('/send_command', methods=['POST'])
-def send_command(center_x, center_y, frame_center_x, frame_center_y):
-    payload = {'x': center_x, 'y': center_y, 'imgx':frame_center_x, 'imgy':frame_center_y}
+def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
     # Send the POST request to the Node.js server
-    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_x':frame_center_x})
+    response = requests.post('http://localhost:3001/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y,'color':color})
     if response.status_code == 200:
         print("Coordinates successfully sent")
     else:
-        print("Failed to send coordinates")
+        print("Failed to send coordinates", response.status_code, response.text)
+
+# @app.route('/send_another_command', methods=['POST'])
+# def send_another_command(center_x, center_y, frame_center_x, frame_center_y):
+#     # Send the POST request to the Node.js server
+#     response = requests.post('http://192.168.10.149:3002/receive_command', json={'center_x':center_x, 'center_y':center_y,'image_center_x':frame_center_x,'image_center_y':frame_center_y})
+#     if response.status_code == 200:
+#         print("Coordinates successfully sent")
+#     else:
+#         print("Failed to send coordinates", response.status_code, response.text)
+
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=True)
