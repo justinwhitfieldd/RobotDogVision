@@ -142,7 +142,13 @@ def image(data_image):
             #     rev_motor()
             # else:
             #     stop_rev_motor()
-            if abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
+                        # Directly check if wrists are above shoulders here
+            hands_up = points[9][1] < points[5][1] and points[10][1] < points[6][1]
+            if hands_up:
+                send_command(center_x, center_y, frame_center_x, frame_center_y, "yellow")
+            # else:
+            #     send_command(center_x, center_y, frame_center_x, frame_center_y, "red")
+            elif abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
                 rev_and_shoot()
             send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
         # else:
@@ -164,7 +170,7 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
         print("Coordinates successfully sent")
     else:
         print("Failed to send coordinates", response.status_code, response.text)
-
+    
 @app.route('/rev_and_shoot', methods=['POST'])
 def rev_and_shoot():
     # Send the POST request to the Node.js server
