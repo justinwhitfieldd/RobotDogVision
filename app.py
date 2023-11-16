@@ -56,7 +56,8 @@ body_connections = [
 # Initialize MoveNet model
 model = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
 movenet = model.signatures['serving_default']
-
+last_rev_and_shoot_time = 0
+rev_and_shoot_interval = 0.5  # Time interval in seconds
 Payload.max_decode_packets = 2048
 
 app = Flask(__name__)
@@ -87,6 +88,7 @@ def determine_intensity_duration(distance):
 
 @socketio.on('image')
 def image(data_image):
+    global last_rev_and_shoot_time
     frame = readb64(data_image)
     
     # Process pose detection
@@ -149,7 +151,10 @@ def image(data_image):
             # else:
             #     send_command(center_x, center_y, frame_center_x, frame_center_y, "red")
             elif abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
-                rev_and_shoot()
+                current_time = time.time()
+                if current_time - last_rev_and_shoot_time > rev_and_shoot_interval:
+                    rev_and_shoot()
+                    last_rev_and_shoot_time = current_time
             send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
         # else:
             # send_command(-1,-1,-1,-1,"green")
