@@ -25,8 +25,8 @@ def toggle_relay(pin, state):
 toggle_relay(rev_motor, True)
 toggle_relay(fire, True)
 
-@app.route('/rev_motor', methods=['POST'])
-def rev_motor():
+@app.route('/rev_the_motor', methods=['POST'])
+def rev_the_motor():
     toggle_relay(rev_motor, False)
     # Return a success response
     return jsonify({'status': 'success', 'message': 'shot fired'}), 200

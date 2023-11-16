@@ -179,11 +179,7 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
 @app.route('/rev_and_shoot', methods=['POST'])
 def rev_and_shoot():
     # Send the POST request to the Node.js server
-<<<<<<< HEAD
-    response = requests.post('http://192.168.10.149:3002/rev_and_shoot')
-=======
     response = requests.post('http://192.168.137.192:3002/rev_and_shoot')
->>>>>>> 9264a7a1e340d24d1c09257f6cc827499af78016
     if response.status_code == 200:
         print("Command sent")
     else:
@@ -192,11 +188,7 @@ def rev_and_shoot():
 @app.route('/shoot', methods=['POST'])
 def shoot():
     # Send the POST request to the Node.js server
-<<<<<<< HEAD
-    response = requests.post('http://192.168.10.149:3002/shoot')
-=======
     response = requests.post('http://192.168.137.192:3002/shoot')
->>>>>>> 9264a7a1e340d24d1c09257f6cc827499af78016
     if response.status_code == 200:
         print("Command sent")
     else:
@@ -205,11 +197,7 @@ def shoot():
 @app.route('/rev_motor', methods=['POST'])
 def rev_motor():
     # Send the POST request to the Node.js server
-<<<<<<< HEAD
-    response = requests.post('http://192.168.10.149:3002/rev_motor')
-=======
     response = requests.post('http://192.168.137.192:3002/rev_motor')
->>>>>>> 9264a7a1e340d24d1c09257f6cc827499af78016
     if response.status_code == 200:
         print("Command sent")
     else:
@@ -218,11 +206,7 @@ def rev_motor():
 @app.route('/stop_rev_motor', methods=['POST'])
 def stop_rev_motor():
     # Send the POST request to the Node.js server
-<<<<<<< HEAD
-    response = requests.post('http://192.168.10.149:3002/stop_rev_motor')
-=======
     response = requests.post('http://192.168.137.192:3002/stop_rev_motor')
->>>>>>> 9264a7a1e340d24d1c09257f6cc827499af78016
     if response.status_code == 200:
         print("Command sent")
     else:
