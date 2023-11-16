@@ -111,9 +111,9 @@ def image(data_image):
 
     outputs = movenet(input_image)
     keypoints = outputs['output_0'].numpy()[0]
-    
-    # Draw keypoints and connections
-    for person_id in range(1):
+    people_info = []
+
+    for person_id in range(keypoints.shape[0]):
         keypoints_for_person = keypoints[person_id]
         
         points = {}
@@ -128,6 +128,10 @@ def image(data_image):
                 
                 points[point_id] = (x, y)
                 cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+        # Check if hands are up
+        hands_up = False
+        if 9 in points and 5 in points and 10 in points and 6 in points:
+            hands_up = points[9][1] < points[5][1] and points[10][1] < points[6][1]
 
         # Draw connections
         for start_point, end_point in body_connections:
@@ -139,12 +143,20 @@ def image(data_image):
         if all(key in points for key in [5, 6, 11, 12]):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
+            people_info.append((center_x, center_y, hands_up))
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
             # if abs(center_x - frame_center_x) < 20 and abs(center_y - frame_center_y) < 20:
             #     rev_motor()
             # else:
             #     stop_rev_motor()
                         # Directly check if wrists are above shoulders here
+                # Targeting logic
+            for center_x, center_y, hands_up in people_info:
+                if not hands_up:
+                    send_command(center_x, center_y, frame_center_x, frame_center_y, "red")
+                    break  # Target the first person without hands up
+                else:
+                    send_command(-1, -1, -1, -1, "green")  # No valid target
             hands_up = points[9][1] < points[5][1] and points[10][1] < points[6][1]
             if hands_up:
                 send_command(center_x, center_y, frame_center_x, frame_center_y, "yellow")
