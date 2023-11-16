@@ -138,26 +138,15 @@ def image(data_image):
             center_x = (points[5][0] + points[6][0] + points[11][0] + points[12][0]) // 4
             center_y = (points[5][1] + points[6][1] + points[11][1] + points[12][1]) // 4
             cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
-<<<<<<< HEAD
             # if abs(center_x - frame_center_x) < 20 and abs(center_y - frame_center_y) < 20:
             #     rev_motor()
             # else:
             #     stop_rev_motor()
             if abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
                 rev_and_shoot()
-=======
-            
-            if abs(center_x - frame_center_x) < 20 and abs(center_y - frame_center_y) < 20:
-                rev_motor()
-            else:
-                stop_rev_motor()
-            if abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
-                shoot()
-
->>>>>>> 9264a7a1e340d24d1c09257f6cc827499af78016
             send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
-        else:
-            send_command(-1,-1,-1,-1,"green")
+        # else:
+            # send_command(-1,-1,-1,-1,"green")
             
                 
     # Encode frame back to base64 string
