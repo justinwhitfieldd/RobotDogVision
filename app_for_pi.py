@@ -41,7 +41,13 @@ def stop_rev_motor():
 def shoot():
 
     toggle_relay(fire, False)
-    time.sleep(0.3)
+
+    # Return a success response
+    return jsonify({'status': 'success', 'message': 'shot fired'}), 200
+
+@app.route('/stop_shoot', methods=['POST'])
+def stop_shoot():
+
     toggle_relay(fire, True)
     # Return a success response
     return jsonify({'status': 'success', 'message': 'shot fired'}), 200
@@ -60,4 +66,4 @@ def rev_and_shoot():
     return jsonify({'status': 'success', 'message': 'shot fired'}), 200
 
 if __name__ == '__main__':
-    app.run(port=3002)  # Run on a different port since 3001 is used by the Node.js server
+    app.run(port=3004)  # Run on a different port since 3001 is used by the Node.js server

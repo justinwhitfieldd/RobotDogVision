@@ -53,6 +53,7 @@ body_connections = [
     (12, 14), #13
     (14, 16)  # Right leg 14
 ]
+
 # Initialize MoveNet model
 model = hub.load("https://tfhub.dev/google/movenet/multipose/lightning/1")
 movenet = model.signatures['serving_default']
@@ -61,7 +62,8 @@ Payload.max_decode_packets = 2048
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
-
+isRev = False
+isShoot = False
 @app.route('/', methods=['POST', 'GET'])
 def index():
     #rev_and_shoot()
@@ -87,6 +89,9 @@ def determine_intensity_duration(distance):
 
 @socketio.on('image')
 def image(data_image):
+    global isRev
+    global rev_motor_start_time
+    global isShoot
     frame = readb64(data_image)
     
     # Process pose detection
@@ -120,7 +125,7 @@ def image(data_image):
             y, x, score = keypoints_for_person[i:i + 3]
             point_id = i // 3
             
-            if score > 0.5:  # confidence score
+            if score > 0.3:  # confidence score
                 x = int(x * frame.shape[1])
                 y = int(y * frame.shape[0])
                 
@@ -142,19 +147,27 @@ def image(data_image):
             #     rev_motor()
             # else:
             #     stop_rev_motor()
-                        # Directly check if wrists are above shoulders here
-            hands_up = points[9][1] < points[5][1] and points[10][1] < points[6][1]
-            if hands_up:
-                send_command(center_x, center_y, frame_center_x, frame_center_y, "yellow")
-            # else:
-            #     send_command(center_x, center_y, frame_center_x, frame_center_y, "red")
-            elif abs(center_x - frame_center_x) < 15 and abs(center_y - frame_center_y) < 15:
-                rev_and_shoot()
-            send_command(center_x, center_y, frame_center_x, frame_center_y,"red")
-        # else:
-            # send_command(-1,-1,-1,-1,"green")
-            
-                
+            if abs(center_x - frame_center_x) < 30 and abs(center_y - frame_center_y) < 25:
+                if isRev == False:
+                    rev_motor()
+                    rev_motor_start_time = time.time()  # Store the current time when rev_motor starts
+                    isRev = True
+                if abs(center_x - frame_center_x) < 10 and abs(center_y - frame_center_y) < 15 and isRev == True:
+                    # Check if 0.5 seconds have passed since rev_motor started
+                    if (time.time() - rev_motor_start_time) >= 0.5:
+                        shoot()
+                        isShoot = True
+                elif abs(center_x - frame_center_x) > 10 and abs(center_y - frame_center_y) > 15 and isShoot:
+                    stop_shoot()
+                    isShoot = False
+
+            elif isRev == True:
+                isRev = False
+                stop_rev_motor()
+                rev_motor_start_time = None  # Reset the timer when rev_motor stops
+            elif isShoot == True:
+                isShoot = False
+                stop_shoot()
     # Encode frame back to base64 string
     imgencode = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])[1]
     stringData = base64.b64encode(imgencode).decode('utf-8')
@@ -170,29 +183,34 @@ def send_command(center_x, center_y, frame_center_x, frame_center_y,color):
         print("Coordinates successfully sent")
     else:
         print("Failed to send coordinates", response.status_code, response.text)
-    
+
 @app.route('/rev_and_shoot', methods=['POST'])
 def rev_and_shoot():
     # Send the POST request to the Node.js server
-    response = requests.post('http://192.168.137.192:3002/rev_and_shoot')
-    if response.status_code == 200:
-        print("Command sent")
-    else:
-        print("Failed to send command", response.status_code, response.text)
-
+    requests.post('http://192.168.12.29:3004/rev_and_shoot')
+    pass
 @app.route('/shoot', methods=['POST'])
 def shoot():
     # Send the POST request to the Node.js server
-    response = requests.post('http://192.168.137.192:3002/shoot')
+    response = requests.post('http://192.168.12.29:3004/shoot')
     if response.status_code == 200:
         print("Command sent")
     else:
         print("Failed to send command", response.status_code, response.text)
 
-@app.route('/rev_motor', methods=['POST'])
+@app.route('/stop_shoot', methods=['POST'])
+def stop_shoot():
+    # Send the POST request to the Node.js server
+    response = requests.post('http://192.168.12.29:3004/stop_shoot')
+    if response.status_code == 200:
+        print("Command sent")
+    else:
+        print("Failed to send command", response.status_code, response.text)
+
+@app.route('/rev_the_motor', methods=['POST'])
 def rev_motor():
     # Send the POST request to the Node.js server
-    response = requests.post('http://192.168.137.192:3002/rev_motor')
+    response = requests.post('http://192.168.12.29:3004/rev_the_motor')
     if response.status_code == 200:
         print("Command sent")
     else:
@@ -201,7 +219,7 @@ def rev_motor():
 @app.route('/stop_rev_motor', methods=['POST'])
 def stop_rev_motor():
     # Send the POST request to the Node.js server
-    response = requests.post('http://192.168.137.192:3002/stop_rev_motor')
+    response = requests.post('http://192.168.12.29:3004/stop_rev_motor')
     if response.status_code == 200:
         print("Command sent")
     else:
